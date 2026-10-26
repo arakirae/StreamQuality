@@ -43,7 +43,7 @@ Vencord's team doesn't support custom plugins, so please ask for help with Strea
 
 ### Automatic (recommended)
 
-1. At the top of this page, click the green **Code** button, then **Download ZIP**.
+1. Download **[StreamQuality.zip](https://github.com/arakirae/StreamQuality/releases/latest/download/StreamQuality.zip)** from the latest release. It holds only what you need to install.
 2. Right click the ZIP → **Extract All**.
 3. Open the extracted folder and double-click **Install.bat**.
    If Windows shows a warning, click **More info → Run anyway** (or **Run**).
@@ -102,7 +102,7 @@ StreamQuality's settings win over Discord's stream menu: the frame rate always, 
 
 When a new version is out, a notification appears a few seconds after Discord starts: click it, wait for the second notification, then click that one to restart Discord. Your settings are kept.
 
-You can also download the new ZIP and run **Install.bat** again. Versions before 1.3.0 can't update themselves, so update them this way once.
+You can also download [StreamQuality.zip](https://github.com/arakirae/StreamQuality/releases/latest/download/StreamQuality.zip) again and run **Install.bat**. Versions before 1.3.0 can't update themselves, so update them this way once.
 
 ## Uninstalling
 

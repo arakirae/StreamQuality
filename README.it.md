@@ -43,7 +43,7 @@ Il team di Vencord non dà assistenza sui plugin esterni: per aiuto con StreamQu
 
 ### Automatica (consigliata)
 
-1. In cima a questa pagina clicca il pulsante verde **Code**, poi **Download ZIP**.
+1. Scarica **[StreamQuality.zip](https://github.com/arakirae/StreamQuality/releases/latest/download/StreamQuality.zip)** dall'ultima release. Contiene solo quello che serve per installare.
 2. Tasto destro sullo ZIP → **Estrai tutto**.
 3. Apri la cartella estratta e fai doppio clic su **Install.bat**.
    Se Windows mostra un avviso, clicca **Ulteriori informazioni → Esegui comunque** (oppure **Esegui**).
@@ -102,7 +102,7 @@ Le impostazioni di StreamQuality vincono sul menu stream di Discord: i fotogramm
 
 Quando esce una nuova versione, pochi secondi dopo l'avvio di Discord compare una notifica: cliccala, aspetta la seconda notifica e clicca anche quella per riavviare Discord. Le tue impostazioni restano.
 
-Puoi anche scaricare il nuovo ZIP e avviare di nuovo **Install.bat**. Le versioni precedenti alla 1.3.0 non sanno aggiornarsi da sole, quindi aggiornale così una volta.
+Puoi anche scaricare di nuovo [StreamQuality.zip](https://github.com/arakirae/StreamQuality/releases/latest/download/StreamQuality.zip) e avviare **Install.bat**. Le versioni precedenti alla 1.3.0 non sanno aggiornarsi da sole, quindi aggiornale così una volta.
 
 ## Disinstallare
 
