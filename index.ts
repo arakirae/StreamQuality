@@ -239,13 +239,13 @@ function findDrops(options: any, t: Targets) {
 
     const max = options.encodingVideoMaxBitRate;
     if (typeof max === "number") {
-        if (discordMaxSeen && max < discordMaxSeen) drops.push(`Discord lowered max bitrate to ${Math.round(max / 1000)} kbps`);
+        if (discordMaxSeen && max < discordMaxSeen) drops.push(`Discord tried to lower max bitrate to ${Math.round(max / 1000)} kbps, kept ${t.max / 1000}`);
         discordMaxSeen = Math.max(discordMaxSeen, max);
     }
 
     const fps = options.encodingVideoFrameRate;
     if (typeof fps === "number") {
-        if (discordFpsSeen && fps < discordFpsSeen) drops.push(`Discord lowered fps to ${fps}`);
+        if (discordFpsSeen && fps < discordFpsSeen) drops.push(`Discord tried to lower fps to ${fps}, kept ${t.fps}`);
         discordFpsSeen = Math.max(discordFpsSeen, fps);
     }
 

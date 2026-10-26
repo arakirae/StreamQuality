@@ -90,7 +90,7 @@ In Discord, when you choose what to share, click the gear icon at the bottom rig
 ## Is it working?
 
 - When your stream starts you'll see **Active: …** (and hear two low notes if sounds are on).
-- When a viewer asks for less, you'll see **Blocked a quality drop: …**.
+- When Discord or a viewer tries to lower the quality, you'll see **Blocked a quality drop: …** followed by what they asked for. The drop didn't happen: your settings stay as they are.
 - If you hear the sound but see no notification, Discord wasn't in focus, so Vencord sent it as a Windows notification. In Vencord's notification settings, set the style to **Always use Vencord notifications**, or check **Notification Log** in Vencord's settings.
 
 ## Updating

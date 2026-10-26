@@ -90,7 +90,7 @@ Su Discord, quando scegli cosa condividere, clicca l'ingranaggio in basso a dest
 ## Come capire se funziona
 
 - Quando parte la stream vedi **Active: …** (e senti due note basse, se i suoni sono attivi).
-- Quando qualcuno chiede meno qualità vedi **Blocked a quality drop: …**.
+- Quando Discord o uno spettatore provano ad abbassare la qualità vedi **Blocked a quality drop: …**, seguito da cosa avevano chiesto. Il calo non è avvenuto: le tue impostazioni restano quelle.
 - Se senti il suono ma non vedi la notifica, Discord non era in primo piano e Vencord l'ha mandata come notifica di Windows. Nelle impostazioni notifiche di Vencord metti lo stile su **Always use Vencord notifications**, oppure guarda **Notification Log** nelle impostazioni di Vencord.
 
 ## Aggiornare
