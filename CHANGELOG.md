@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0 (2026-10-26)
+
+- Updates from inside Discord: when a new version is out, a notification appears when Discord starts. Click it to download the update and rebuild Vencord, then click the next one to restart Discord
+- New setting: Check Updates (on by default)
+- New file native.ts: the part that checks GitHub and installs updates. The installer copies it too
+- Versions before 1.3.0 can't update themselves: update once with Install.bat
+
 ## 1.2.0 (2026-10-26)
 
 - StreamQuality now also controls what Discord captures: changing the resolution or frame rate in Discord's stream menu no longer lowers your stream. The frame rate always follows StreamQuality, and so does the resolution unless it's set to Same as Discord

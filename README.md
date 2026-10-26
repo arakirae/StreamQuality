@@ -20,6 +20,7 @@ It forces the bitrate and frame rate of your Go Live stream, stops Discord and y
 - **Ignores downscale requests.** When a viewer makes the stream window smaller, Discord asks your PC to send fewer pixels. StreamQuality keeps sending full quality.
 - **Codec choice (experimental).** Force H265 (HEVC) if your PC can encode it: better quality at the same bitrate, especially in motion. By default Discord still decides.
 - **Tells you what it blocked.** A notification, plus an optional soft, low-pitched sound, at most once a minute. Everything also goes into Vencord's notification log.
+- **Updates from inside Discord.** When a new version is out, a notification appears when Discord starts. Click it to update, then click again to restart Discord.
 - **Leaves other streams alone.** It only changes the stream you send, never the ones you watch.
 
 ## What it can't do
@@ -58,7 +59,7 @@ Vencord's team doesn't support custom plugins, so please ask for help with Strea
 ### Manual (if you already build Vencord from source)
 
 1. In your Vencord folder, create `src\userplugins\streamQuality`.
-2. Put `index.ts` from this repository in it.
+2. Put `index.ts` and `native.ts` from this repository in it.
 3. Run `pnpm build` in your Vencord folder.
 4. Fully restart Discord and turn on StreamQuality.
 
@@ -79,6 +80,7 @@ Vencord's own guide: [installing custom plugins](https://docs.vencord.dev/instal
 | Sounds | On | Soft, low sound: two rising notes when your stream starts, two short taps when it blocks a drop |
 | Sound Style | Plugin sound | Or Discord's message sound |
 | Sound Volume | 30 | From 0 to 100 |
+| Check Updates | On | When Discord starts, checks GitHub for a new version. You choose whether to install it |
 | Debug | Off | Writes what Discord sends to the developer console |
 
 StreamQuality's settings win over Discord's stream menu: the frame rate always, the resolution unless you leave it on **Same as Discord**. In that case pick the resolution in Discord: when you choose what to share, click the gear icon at the bottom right, choose **Custom**, then set the resolution (for example **Source**).
@@ -98,7 +100,9 @@ StreamQuality's settings win over Discord's stream menu: the frame rate always, 
 
 ## Updating
 
-Download the new ZIP and run **Install.bat** again. Your settings are kept.
+When a new version is out, a notification appears a few seconds after Discord starts: click it, wait for the second notification, then click that one to restart Discord. Your settings are kept.
+
+You can also download the new ZIP and run **Install.bat** again. Versions before 1.3.0 can't update themselves, so update them this way once.
 
 ## Uninstalling
 
@@ -106,6 +110,9 @@ Download the new ZIP and run **Install.bat** again. Your settings are kept.
 - To remove it, delete the `src\userplugins\streamQuality` folder inside your Vencord folder (usually `C:\Users\<you>\Vencord`), run `pnpm build` in your Vencord folder, then fully restart Discord.
 
 ## FAQ
+
+**Does StreamQuality connect to the internet?**
+Only to this GitHub page: once when Discord starts, to check for a new version, and when you click to install an update. It only downloads files and sends none of your data; GitHub just sees an ordinary download. Turn off Check Updates to stop it.
 
 **Can I get banned for this?**
 Client mods like Vencord go against Discord's Terms of Service. Vencord says there are no known cases of users banned for using client mods, but you use them at your own risk.

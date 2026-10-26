@@ -12,12 +12,15 @@
 
 import { showNotification } from "@api/Notifications";
 import { definePluginSettings } from "@api/Settings";
-import definePlugin, { OptionType } from "@utils/types";
+import { relaunch } from "@utils/native";
+import definePlugin, { OptionType, PluginNative } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
 import { ApplicationStreamingStore, MediaEngineStore } from "@webpack/common";
 
 const SoundUtils = findByPropsLazy("playSound", "createSound");
 
+const VERSION = "1.3.0";
+const UPDATE_CHECK_DELAY_MS = 15_000;
 const TAG = "[StreamQuality]";
 const ORIGINAL = Symbol("StreamQuality.original");
 const NOTICE_COOLDOWN_MS = 60_000;
@@ -111,6 +114,11 @@ const settings = definePluginSettings({
         default: 30,
         stickToMarkers: false
     },
+    checkUpdates: {
+        type: OptionType.BOOLEAN,
+        description: "When Discord starts, check GitHub for a new version (you choose whether to install it)",
+        default: true
+    },
     debug: {
         type: OptionType.BOOLEAN,
         description: "Log what Discord sends to the developer console (for troubleshooting)",
@@ -120,6 +128,8 @@ const settings = definePluginSettings({
 
 let engine: any = null;
 let poll: ReturnType<typeof setInterval> | null = null;
+let updateTimer: ReturnType<typeof setTimeout> | null = null;
+let updating = false;
 let audioCtx: AudioContext | null = null;
 
 // State of the current stream
@@ -489,6 +499,82 @@ function applyCodecChoice(codecs: CodecCapability[]) {
     }
 }
 
+// ---------- updates ----------
+
+// The part of the plugin that runs in Discord's main process (native.ts)
+function getNative() {
+    return VencordNative?.pluginHelpers?.StreamQuality as PluginNative<typeof import("./native")> | undefined;
+}
+
+function isNewer(latest: string, current: string) {
+    const a = latest.split(".").map(Number);
+    const b = current.split(".").map(Number);
+    for (let i = 0; i < 3; i++) {
+        if ((a[i] || 0) !== (b[i] || 0)) return (a[i] || 0) > (b[i] || 0);
+    }
+    return false;
+}
+
+async function checkForUpdate() {
+    try {
+        const native = getNative();
+        if (!native?.getLatestVersion) {
+            log("Update check skipped: native.ts isn't installed");
+            return;
+        }
+        const res = await native.getLatestVersion();
+        if (!res.ok) {
+            log("Update check failed:", res.error);
+            return;
+        }
+        log(`Installed v${VERSION}, latest on GitHub v${res.version}`);
+        const latest = res.version;
+        if (!latest || !isNewer(latest, VERSION)) return;
+
+        showNotification({
+            title: "StreamQuality",
+            body: `Version ${latest} is out (you have ${VERSION}). Click here to update.`,
+            color: "#f9a8d4",
+            permanent: true,
+            noPersist: true,
+            onClick: () => void installUpdate(latest)
+        });
+    } catch (err) {
+        log("Update check failed:", err);
+    }
+}
+
+async function installUpdate(version: string) {
+    if (updating) return;
+    updating = true;
+    try {
+        notify(`Updating to ${version}…`);
+        const native = getNative();
+        if (!native?.downloadUpdate) throw new Error("native.ts isn't installed");
+
+        const res = await native.downloadUpdate(version);
+        if (!res.ok) throw new Error(res.error);
+
+        // Same rebuild Vencord uses when it updates itself
+        const build = await VencordNative.updater.rebuild();
+        if (!build.ok || !build.value) throw new Error("Vencord couldn't rebuild");
+
+        showNotification({
+            title: "StreamQuality",
+            body: `Version ${version} is installed. Click here to restart Discord.`,
+            color: "#f9a8d4",
+            permanent: true,
+            noPersist: true,
+            onClick: relaunch
+        });
+    } catch (err: any) {
+        log("Update failed:", err);
+        notify(`Couldn't update by itself (${err?.message ?? err}). Download the new version from GitHub and run Install.bat.`);
+    } finally {
+        updating = false;
+    }
+}
+
 export default definePlugin({
     name: "StreamQuality",
     description: "Forces resolution, fps, bitrate and codec of your screen share and blocks quality drops",
@@ -507,16 +593,21 @@ export default definePlugin({
     ],
 
     applyCodecChoice,
+    checkForUpdate,
+    installUpdate,
 
     start() {
         scan();
         poll = setInterval(scan, 2000);
-        log("Started");
+        if (settings.store.checkUpdates) updateTimer = setTimeout(checkForUpdate, UPDATE_CHECK_DELAY_MS);
+        log(`Started v${VERSION}`);
     },
 
     stop() {
         if (poll) clearInterval(poll);
         poll = null;
+        if (updateTimer) clearTimeout(updateTimer);
+        updateTimer = null;
         engine?.removeListener?.("Connection", hook);
         unhookAll();
         engine = null;

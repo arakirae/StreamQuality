@@ -20,6 +20,7 @@ Forza il bitrate e i fotogrammi della tua diretta Go Live, impedisce a Discord e
 - **Ignora le richieste di abbassare la qualità.** Quando uno spettatore rimpicciolisce la finestra della stream, Discord chiede al tuo PC di mandare meno pixel. StreamQuality continua a mandare la qualità piena.
 - **Scelta del codec (sperimentale).** Forza H265 (HEVC) se il tuo PC sa codificarlo: più qualità a parità di bitrate, soprattutto nel movimento. Di base decide sempre Discord.
 - **Ti dice cosa ha bloccato.** Una notifica, con un suono morbido e basso se vuoi, al massimo una volta al minuto. Tutto finisce anche nel registro notifiche di Vencord.
+- **Si aggiorna da dentro Discord.** Quando esce una nuova versione, all'avvio di Discord compare una notifica. Cliccala per aggiornare, poi clicca la seconda per riavviare Discord.
 - **Non tocca le altre stream.** Cambia solo la stream che mandi tu, mai quelle che guardi.
 
 ## Cosa non può fare
@@ -58,7 +59,7 @@ Il team di Vencord non dà assistenza sui plugin esterni: per aiuto con StreamQu
 ### Manuale (se compili già Vencord)
 
 1. Nella cartella di Vencord crea `src\userplugins\streamQuality`.
-2. Mettici dentro il file `index.ts` di questa pagina.
+2. Mettici dentro i file `index.ts` e `native.ts` di questa pagina.
 3. Esegui `pnpm build` nella cartella di Vencord.
 4. Riavvia Discord del tutto e attiva StreamQuality.
 
@@ -79,6 +80,7 @@ Guida ufficiale di Vencord: [installare plugin esterni](https://docs.vencord.dev
 | Sounds | Attivo | Suono morbido e basso: due note che salgono quando parte la stream, due tocchi brevi quando blocca un calo |
 | Sound Style | Plugin sound | Oppure il suono dei messaggi di Discord |
 | Sound Volume | 30 | Da 0 a 100 |
+| Check Updates | Attivo | All'avvio di Discord controlla su GitHub se c'è una nuova versione. Sei tu a decidere se installarla |
 | Debug | Spento | Scrive nella console sviluppatore cosa manda Discord |
 
 Le impostazioni di StreamQuality vincono sul menu stream di Discord: i fotogrammi sempre, la risoluzione a meno che tu non la lasci su **Same as Discord**. In quel caso scegli la risoluzione su Discord: quando scegli cosa condividere, clicca l'ingranaggio in basso a destra, scegli **Personalizzato** e imposta la risoluzione (per esempio **Sorgente**).
@@ -98,7 +100,9 @@ Le impostazioni di StreamQuality vincono sul menu stream di Discord: i fotogramm
 
 ## Aggiornare
 
-Scarica il nuovo ZIP e avvia di nuovo **Install.bat**. Le tue impostazioni restano.
+Quando esce una nuova versione, pochi secondi dopo l'avvio di Discord compare una notifica: cliccala, aspetta la seconda notifica e clicca anche quella per riavviare Discord. Le tue impostazioni restano.
+
+Puoi anche scaricare il nuovo ZIP e avviare di nuovo **Install.bat**. Le versioni precedenti alla 1.3.0 non sanno aggiornarsi da sole, quindi aggiornale così una volta.
 
 ## Disinstallare
 
@@ -106,6 +110,9 @@ Scarica il nuovo ZIP e avvia di nuovo **Install.bat**. Le tue impostazioni resta
 - Per toglierlo: elimina la cartella `src\userplugins\streamQuality` dentro la cartella di Vencord (di solito `C:\Users\<tuo nome>\Vencord`), esegui `pnpm build` nella cartella di Vencord e riavvia Discord del tutto.
 
 ## Domande frequenti
+
+**StreamQuality si collega a internet?**
+Solo a questa pagina GitHub: una volta all'avvio di Discord, per controllare se c'è una nuova versione, e quando clicchi per installare un aggiornamento. Scarica soltanto dei file e non invia nessun tuo dato: GitHub vede un normale download. Spegni Check Updates per disattivarlo.
 
 **Posso essere bannato?**
 Le mod del client come Vencord vanno contro i Termini di servizio di Discord. Vencord dice che non si conoscono casi di utenti bannati per averle usate, ma le usi a tuo rischio.

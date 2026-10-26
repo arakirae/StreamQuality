@@ -175,6 +175,11 @@ function Copy-Plugin {
     $pluginDir = [IO.Path]::Combine($script:VencordDir, 'src', 'userplugins', 'streamQuality')
     New-Item -ItemType Directory -Force -Path $pluginDir | Out-Null
     Copy-Item -LiteralPath $PluginFile -Destination (Join-Path $pluginDir 'index.ts') -Force
+    # native.ts is the part that checks GitHub for updates and installs them
+    $nativeFile = Join-Path $ScriptDir 'native.ts'
+    if (Test-Path -LiteralPath $nativeFile) {
+        Copy-Item -LiteralPath $nativeFile -Destination (Join-Path $pluginDir 'native.ts') -Force
+    }
     Write-Ok "Copied to $pluginDir"
 }
 
