@@ -18,6 +18,7 @@ It forces the bitrate and frame rate of your Go Live stream, stops Discord and y
 - **Forced frame rate.** 30 or 60 fps.
 - **Optional fixed resolution.** Keep the resolution you pick in Discord, or force one, including ultrawide sizes like 2560x1080.
 - **Ignores downscale requests.** When a viewer makes the stream window smaller, Discord asks your PC to send fewer pixels. StreamQuality keeps sending full quality.
+- **Codec choice (experimental).** Force H265 (HEVC) if your PC can encode it: better quality at the same bitrate, especially in motion. By default Discord still decides.
 - **Tells you what it blocked.** A notification, plus an optional soft, low-pitched sound, at most once a minute. Everything also goes into Vencord's notification log.
 - **Leaves other streams alone.** It only changes the stream you send, never the ones you watch.
 
@@ -25,7 +26,7 @@ It forces the bitrate and frame rate of your Go Live stream, stops Discord and y
 
 - **Go past Discord's limit.** In testing, Discord's server accepted about 9000 kbps at most, so higher values don't help.
 - **Make very fast motion perfect.** About 9 Mbps of H.264 isn't much for a fast game at high resolution. See [Tips](#tips-for-a-sharper-stream).
-- **Choose the codec.** Discord picks it based on your graphics card and your viewers.
+- **Unlock codecs Discord doesn't support on your PC.** The codec option only picks among the codecs Discord can encode with your graphics card (for example, many cards can't stream in AV1).
 - **Keep the bitrate graph flat.** In calm scenes the encoder needs less data and sends less by itself. That's normal: the picture stays sharp.
 - **Fix a slow connection.** See [Before you start](#before-you-start).
 
@@ -73,6 +74,7 @@ Vencord's own guide: [installing custom plugins](https://docs.vencord.dev/instal
 | Bitrate Min | 4000 | The lowest bitrate Discord may aim for. With a fast, stable connection you can raise it to 7000 |
 | Bitrate Max | 9000 | The highest bitrate. About 9000 is Discord's limit |
 | Ignore Viewer Requests | On | Keeps full quality when viewers ask for less |
+| Video Codec | Automatic | Forces a codec for your stream and camera (experimental). Restart Discord after changing it |
 | Notify Blocked | On | Shows a notification when a quality drop is blocked |
 | Sounds | On | Soft, low sound: two rising notes when your stream starts, two short taps when it blocks a drop |
 | Sound Style | Plugin sound | Or Discord's message sound |
@@ -83,6 +85,7 @@ In Discord, when you choose what to share, click the gear icon at the bottom rig
 
 ## Tips for a sharper stream
 
+- **Try H265.** Set Video Codec to **H265 / HEVC** and restart Discord. In Discord's stream debug, the Codec field should now say H265. If a viewer can't see your stream, their PC can't play H265: set it back to Automatic.
 - **Turn off film grain, motion blur and chromatic aberration** in your games. They change every pixel in every frame, which is the hardest thing to compress. This alone often helps more than any setting.
 - **Match your viewers' screens.** If your friends watch on 1080p monitors, a 1080p stream looks just as sharp to them and leaves more data for each pixel.
 - **Slow games: try 30 fps.** Each frame gets twice the data.
@@ -124,6 +127,7 @@ The red message says what failed. Most often Git or Node.js was just installed a
 - Made by ARA.
 - Built on [Vencord](https://github.com/Vendicated/Vencord).
 - Inspired by [BetterScreenshare](https://github.com/philhk/Vencord/tree/better-plugins) by philhk.
+- The codec option uses the same Discord hook as Equicord's [StreamingCodecDisabler](https://github.com/Equicord/Equicord/tree/main/src/equicordplugins/streamingCodecDisabler).
 
 ## Support
 

@@ -18,6 +18,7 @@ Forza il bitrate e i fotogrammi della tua diretta Go Live, impedisce a Discord e
 - **Fotogrammi forzati.** 30 o 60 fps.
 - **Risoluzione fissa, se vuoi.** Tieni quella che scegli su Discord, oppure ne forzi una, anche ultrawide come 2560x1080.
 - **Ignora le richieste di abbassare la qualità.** Quando uno spettatore rimpicciolisce la finestra della stream, Discord chiede al tuo PC di mandare meno pixel. StreamQuality continua a mandare la qualità piena.
+- **Scelta del codec (sperimentale).** Forza H265 (HEVC) se il tuo PC sa codificarlo: più qualità a parità di bitrate, soprattutto nel movimento. Di base decide sempre Discord.
 - **Ti dice cosa ha bloccato.** Una notifica, con un suono morbido e basso se vuoi, al massimo una volta al minuto. Tutto finisce anche nel registro notifiche di Vencord.
 - **Non tocca le altre stream.** Cambia solo la stream che mandi tu, mai quelle che guardi.
 
@@ -25,7 +26,7 @@ Forza il bitrate e i fotogrammi della tua diretta Go Live, impedisce a Discord e
 
 - **Superare il limite di Discord.** Nei test, il server di Discord accettava al massimo circa 9000 kbps: valori più alti non servono.
 - **Rendere perfetto il movimento velocissimo.** Circa 9 Mbps in H.264 sono pochi per un gioco veloce ad alta risoluzione. Vedi i [consigli](#consigli-per-una-stream-più-nitida).
-- **Scegliere il codec.** Lo sceglie Discord, in base alla tua scheda video e a chi guarda.
+- **Sbloccare codec che Discord non supporta sul tuo PC.** L'opzione del codec sceglie solo tra quelli che Discord sa codificare con la tua scheda video (per esempio, molte schede non possono trasmettere in AV1).
 - **Tenere piatto il grafico del bitrate.** Nelle scene calme l'encoder ha bisogno di meno dati e ne manda meno da solo. È normale: l'immagine resta nitida.
 - **Sistemare una connessione lenta.** Vedi [Prima di iniziare](#prima-di-iniziare).
 
@@ -73,6 +74,7 @@ Guida ufficiale di Vencord: [installare plugin esterni](https://docs.vencord.dev
 | Bitrate Min | 4000 | Il bitrate più basso a cui Discord può puntare. Con una connessione veloce e stabile puoi alzarlo a 7000 |
 | Bitrate Max | 9000 | Il bitrate più alto. Circa 9000 è il limite di Discord |
 | Ignore Viewer Requests | Attivo | Mantiene la qualità piena quando chi guarda ne chiede meno |
+| Video Codec | Automatic | Forza un codec per la stream e la webcam (sperimentale). Dopo averlo cambiato riavvia Discord |
 | Notify Blocked | Attivo | Mostra una notifica quando blocca un calo di qualità |
 | Sounds | Attivo | Suono morbido e basso: due note che salgono quando parte la stream, due tocchi brevi quando blocca un calo |
 | Sound Style | Plugin sound | Oppure il suono dei messaggi di Discord |
@@ -83,6 +85,7 @@ Su Discord, quando scegli cosa condividere, clicca l'ingranaggio in basso a dest
 
 ## Consigli per una stream più nitida
 
+- **Prova H265.** Metti Video Codec su **H265 / HEVC** e riavvia Discord. Nel Debug della stream il campo Codec deve dire H265. Se uno spettatore non vede la stream, il suo PC non sa riprodurre H265: rimetti Automatic.
 - **Togli film grain, motion blur e aberrazione cromatica** dai giochi. Cambiano tutti i pixel in ogni fotogramma, ed è la cosa più difficile da comprimere. Spesso questo da solo aiuta più di qualsiasi impostazione.
 - **Scegli in base agli schermi di chi guarda.** Se i tuoi amici guardano da monitor 1080p, una stream 1080p per loro è nitida uguale e lascia più dati per ogni pixel.
 - **Giochi lenti: prova 30 fps.** Ogni fotogramma riceve il doppio dei dati.
@@ -124,6 +127,7 @@ Il messaggio rosso dice cosa non ha funzionato. Il caso più comune: Git o Node.
 - Creato da ARA.
 - Basato su [Vencord](https://github.com/Vendicated/Vencord).
 - Ispirato a [BetterScreenshare](https://github.com/philhk/Vencord/tree/better-plugins) di philhk.
+- L'opzione del codec usa lo stesso aggancio a Discord di [StreamingCodecDisabler](https://github.com/Equicord/Equicord/tree/main/src/equicordplugins/streamingCodecDisabler) di Equicord.
 
 ## Supporto
 

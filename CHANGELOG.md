@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.0 (2026-10-26)
+
+- New Video Codec setting (experimental): force H265 / HEVC, AV1 or H264 for your stream and camera, if your PC can encode it. Default: Automatic
+- If the chosen codec can't be used on your PC, StreamQuality tells you and lets Discord choose
+
 ## 1.0.1 (2026-10-26)
 
 - Clearer notifications: when Discord tries to lower the bitrate or frame rate, the message now says what it asked for and what the plugin kept, for example "Discord tried to lower max bitrate to 4424 kbps, kept 9000"

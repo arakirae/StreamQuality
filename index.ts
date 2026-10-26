@@ -75,6 +75,17 @@ const settings = definePluginSettings({
         description: "Ignore viewers' requests to lower resolution or fps (always send full quality)",
         default: true
     },
+    videoCodec: {
+        type: OptionType.SELECT,
+        description: "Video codec for your stream and camera (experimental). It only works if your PC can encode it, and viewers who can't play it may not see your stream. Restart Discord after changing it.",
+        restartNeeded: true,
+        options: [
+            { label: "Automatic (Discord decides)", value: "auto", default: true },
+            { label: "H265 / HEVC", value: "H265" },
+            { label: "AV1", value: "AV1" },
+            { label: "H264", value: "H264" }
+        ]
+    },
     notifyBlocked: {
         type: OptionType.BOOLEAN,
         description: "Show a notification when a quality drop is blocked",
@@ -116,6 +127,10 @@ let lastSent = "";
 let discordMaxSeen = 0;
 let discordFpsSeen = 0;
 let lastNotice = 0;
+
+let codecWarned = false;
+
+type CodecCapability = { name: string; encode: boolean; decode: boolean; };
 
 function log(...args: any[]) {
     if (settings.store.debug) console.log(`%c${TAG}`, "color:#f9a8d4;font-weight:bold", ...args);
@@ -396,11 +411,51 @@ function scan() {
     engine.connections?.forEach?.(hook);
 }
 
+// Called by Discord (through the patch below) with the codecs this PC can encode and decode.
+// To force a codec we mark the others as "can't encode", so Discord has to pick ours.
+// Decoding is left untouched, so you can still watch every stream.
+function applyCodecChoice(codecs: CodecCapability[]) {
+    try {
+        if (!Array.isArray(codecs)) return codecs;
+        if (settings.store.debug) log("Codecs on this PC:", codecs.map(c => `${c?.name}${c?.encode ? "" : " (play only)"}`).join(", "));
+
+        const wanted = String(settings.store.videoCodec);
+        if (wanted === "auto") return codecs;
+
+        if (!codecs.some(c => c?.name === wanted && c.encode)) {
+            log(`This PC can't encode ${wanted} in Discord, keeping Discord's choice`);
+            if (!codecWarned) {
+                codecWarned = true;
+                notify(`Your PC can't stream in ${wanted} on Discord, so Discord keeps choosing the codec`);
+            }
+            return codecs;
+        }
+
+        return codecs.map(c => (c?.name === wanted ? c : { ...c, encode: false }));
+    } catch (err) {
+        log("Codec choice failed, keeping Discord's choice:", err);
+        return codecs;
+    }
+}
+
 export default definePlugin({
     name: "StreamQuality",
-    description: "Forces resolution, fps and bitrate of your screen share and blocks quality drops",
+    description: "Forces resolution, fps, bitrate and codec of your screen share and blocks quality drops",
     authors: [{ name: "ARA", id: 0n }],
     settings,
+
+    patches: [
+        {
+            // Same spot used by Equicord's StreamingCodecDisabler: the list of codecs Discord can use
+            find: "lastOverrideCodecDenylist.length",
+            replacement: {
+                match: /(let \i=)(\i\(\i\))(?=,\i=this\.lastOverrideCodecDenylist\.length)/,
+                replace: "$1$self.applyCodecChoice($2)"
+            }
+        }
+    ],
+
+    applyCodecChoice,
 
     start() {
         scan();
