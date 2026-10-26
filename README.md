@@ -15,8 +15,8 @@ It forces the bitrate and frame rate of your Go Live stream, stops Discord and y
 ## Features
 
 - **Forced bitrate.** Sets the target, minimum and maximum bitrate of your stream (by default 9000, 4000 and 9000 kbps).
-- **Forced frame rate.** 30 or 60 fps.
-- **Optional fixed resolution.** Keep the resolution you pick in Discord, or force one, including ultrawide sizes like 2560x1080.
+- **Forced frame rate.** 30 or 60 fps, even if someone changes Discord's stream menu.
+- **Optional fixed resolution.** Keep the resolution you pick in Discord, or force one that Discord's stream menu can't change, including ultrawide sizes like 2560x1080.
 - **Ignores downscale requests.** When a viewer makes the stream window smaller, Discord asks your PC to send fewer pixels. StreamQuality keeps sending full quality.
 - **Codec choice (experimental).** Force H265 (HEVC) if your PC can encode it: better quality at the same bitrate, especially in motion. By default Discord still decides.
 - **Tells you what it blocked.** A notification, plus an optional soft, low-pitched sound, at most once a minute. Everything also goes into Vencord's notification log.
@@ -68,8 +68,8 @@ Vencord's own guide: [installing custom plugins](https://docs.vencord.dev/instal
 
 | Setting | Default | What it does |
 |---|---|---|
-| Resolution | Same as Discord | Keeps the resolution from Discord's stream menu, or forces one |
-| Framerate | 60 fps | Frames per second of your stream |
+| Resolution | Same as Discord | Keeps the resolution from Discord's stream menu, or forces one that the menu can't change |
+| Framerate | 60 fps | Frames per second of your stream. Discord's stream menu can't change it |
 | Bitrate Target | 9000 | The bitrate Discord aims for, in kbps |
 | Bitrate Min | 4000 | The lowest bitrate Discord may aim for. With a fast, stable connection you can raise it to 7000 |
 | Bitrate Max | 9000 | The highest bitrate. About 9000 is Discord's limit |
@@ -81,7 +81,7 @@ Vencord's own guide: [installing custom plugins](https://docs.vencord.dev/instal
 | Sound Volume | 30 | From 0 to 100 |
 | Debug | Off | Writes what Discord sends to the developer console |
 
-In Discord, when you choose what to share, click the gear icon at the bottom right, choose **Custom**, then set the resolution and frame rate you want (for example **Source** and **60 fps**).
+StreamQuality's settings win over Discord's stream menu: the frame rate always, the resolution unless you leave it on **Same as Discord**. In that case pick the resolution in Discord: when you choose what to share, click the gear icon at the bottom right, choose **Custom**, then set the resolution (for example **Source**).
 
 ## Tips for a sharper stream
 

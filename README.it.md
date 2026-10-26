@@ -15,8 +15,8 @@ Forza il bitrate e i fotogrammi della tua diretta Go Live, impedisce a Discord e
 ## Cosa fa
 
 - **Bitrate forzato.** Imposta il bitrate obiettivo, minimo e massimo della tua stream (di base 9000, 4000 e 9000 kbps).
-- **Fotogrammi forzati.** 30 o 60 fps.
-- **Risoluzione fissa, se vuoi.** Tieni quella che scegli su Discord, oppure ne forzi una, anche ultrawide come 2560x1080.
+- **Fotogrammi forzati.** 30 o 60 fps, anche se qualcuno cambia il menu stream di Discord.
+- **Risoluzione fissa, se vuoi.** Tieni quella che scegli su Discord, oppure ne forzi una che il menu stream di Discord non può cambiare, anche ultrawide come 2560x1080.
 - **Ignora le richieste di abbassare la qualità.** Quando uno spettatore rimpicciolisce la finestra della stream, Discord chiede al tuo PC di mandare meno pixel. StreamQuality continua a mandare la qualità piena.
 - **Scelta del codec (sperimentale).** Forza H265 (HEVC) se il tuo PC sa codificarlo: più qualità a parità di bitrate, soprattutto nel movimento. Di base decide sempre Discord.
 - **Ti dice cosa ha bloccato.** Una notifica, con un suono morbido e basso se vuoi, al massimo una volta al minuto. Tutto finisce anche nel registro notifiche di Vencord.
@@ -68,8 +68,8 @@ Guida ufficiale di Vencord: [installare plugin esterni](https://docs.vencord.dev
 
 | Impostazione | Di base | Cosa fa |
 |---|---|---|
-| Resolution | Same as Discord | Tiene la risoluzione scelta nel menu stream di Discord, oppure ne forza una |
-| Framerate | 60 fps | Fotogrammi al secondo della stream |
+| Resolution | Same as Discord | Tiene la risoluzione scelta nel menu stream di Discord, oppure ne forza una che il menu non può cambiare |
+| Framerate | 60 fps | Fotogrammi al secondo della stream. Il menu stream di Discord non può cambiarli |
 | Bitrate Target | 9000 | Il bitrate a cui punta Discord, in kbps |
 | Bitrate Min | 4000 | Il bitrate più basso a cui Discord può puntare. Con una connessione veloce e stabile puoi alzarlo a 7000 |
 | Bitrate Max | 9000 | Il bitrate più alto. Circa 9000 è il limite di Discord |
@@ -81,7 +81,7 @@ Guida ufficiale di Vencord: [installare plugin esterni](https://docs.vencord.dev
 | Sound Volume | 30 | Da 0 a 100 |
 | Debug | Spento | Scrive nella console sviluppatore cosa manda Discord |
 
-Su Discord, quando scegli cosa condividere, clicca l'ingranaggio in basso a destra, scegli **Personalizzato** e imposta risoluzione e fotogrammi (per esempio **Sorgente** e **60 fps**).
+Le impostazioni di StreamQuality vincono sul menu stream di Discord: i fotogrammi sempre, la risoluzione a meno che tu non la lasci su **Same as Discord**. In quel caso scegli la risoluzione su Discord: quando scegli cosa condividere, clicca l'ingranaggio in basso a destra, scegli **Personalizzato** e imposta la risoluzione (per esempio **Sorgente**).
 
 ## Consigli per una stream più nitida
 

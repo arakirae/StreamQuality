@@ -274,6 +274,18 @@ function findDrops(options: any, t: Targets) {
     return drops;
 }
 
+// One video layer of the stream (Discord sends either one object or a list)
+function overrideStreamParameter(p: any, t: Targets) {
+    if (!p || typeof p !== "object" || (p.type && p.type !== "video")) return p;
+    const q = { ...p, maxFrameRate: t.fps };
+    if ("maxBitrate" in p) q.maxBitrate = t.max;
+    if (!t.source) {
+        q.maxResolution = { ...p.maxResolution, type: "fixed", width: t.width, height: t.height };
+        q.maxPixelCount = t.width * t.height;
+    }
+    return q;
+}
+
 function override(options: any, t: Targets) {
     const out: any = {
         ...options,
@@ -282,6 +294,7 @@ function override(options: any, t: Targets) {
         encodingVideoMaxBitRate: t.max,
         encodingVideoFrameRate: t.fps
     };
+    if ("captureVideoFrameRate" in options) out.captureVideoFrameRate = t.fps;
     if (!t.source) {
         out.encodingVideoWidth = t.width;
         out.encodingVideoHeight = t.height;
@@ -291,17 +304,52 @@ function override(options: any, t: Targets) {
         out.remoteSinkWantsMaxFramerate = t.fps;
     }
 
-    if (Array.isArray(options.streamParameters)) {
-        out.streamParameters = options.streamParameters.map((p: any) => {
-            if (p?.type !== "video") return p;
-            const q = { ...p };
-            if ("maxBitrate" in q) q.maxBitrate = t.max;
-            if ("maxFrameRate" in q) q.maxFrameRate = t.fps;
-            if (!t.source && q.maxResolution) q.maxResolution = { ...q.maxResolution, width: t.width, height: t.height };
-            return q;
-        });
-    }
+    const params = options.streamParameters;
+    if (Array.isArray(params)) out.streamParameters = params.map((p: any) => overrideStreamParameter(p, t));
+    else if (params && typeof params === "object") out.streamParameters = overrideStreamParameter(params, t);
     return out;
+}
+
+// The quality picked in Discord's stream menu: { resolution: height in pixels, frameRate }.
+// It sets what gets captured, so the encoder settings alone can't undo it.
+function overrideGoLiveQuality(source: any) {
+    const quality = source?.quality;
+    if (!quality || typeof quality !== "object") return source;
+    const t = getTargets();
+    const kept = { ...quality, frameRate: t.fps };
+    if (!t.source) kept.resolution = t.height;
+    if (kept.frameRate !== quality.frameRate || kept.resolution !== quality.resolution)
+        log("Discord's stream menu asked for", JSON.stringify(quality), "- keeping", JSON.stringify(kept));
+    return { ...source, quality: kept };
+}
+
+function safely<T>(fn: () => T, fallback: T): T {
+    try {
+        return fn();
+    } catch (err) {
+        log("Override failed, using Discord's values:", err);
+        return fallback;
+    }
+}
+
+// Replaces target[name] once; the original is kept on the wrapper so it can be put back
+function wrapMethod(target: any, name: string, makeWrapper: (original: Function) => Function) {
+    const original = target?.[name];
+    if (typeof original !== "function" || original[ORIGINAL]) return false;
+    const wrapper: any = makeWrapper(original);
+    wrapper[ORIGINAL] = original;
+    try {
+        target[name] = wrapper;
+        return true;
+    } catch (err) {
+        log(`Could not hook ${name}:`, err);
+        return false;
+    }
+}
+
+function unwrapMethod(target: any, name: string) {
+    const fn = target?.[name];
+    if (fn?.[ORIGINAL]) target[name] = fn[ORIGINAL];
 }
 
 function handle(original: Function, self: any, options: any) {
@@ -340,25 +388,21 @@ function hook(connection: any) {
     if (typeof userId === "string" && typeof streamUserId === "string" && userId !== streamUserId) return;
 
     const native = connection.conn;
-    const original = native?.setTransportOptions;
-    if (typeof original !== "function" || original[ORIGINAL]) return; // not hookable, or already hooked
-
-    const wrapper: any = function (this: any, options: any) {
+    const hooked = wrapMethod(native, "setTransportOptions", original => function (this: any, options: any) {
         try {
             return handle(original, this, options);
         } catch (err) {
             log("Override failed, using Discord's values:", err);
             return original.call(this, options);
         }
-    };
-    wrapper[ORIGINAL] = original;
+    });
+    if (!hooked) return; // not hookable, or already hooked
+    const wrapper = native.setTransportOptions;
 
-    try {
-        native.setTransportOptions = wrapper;
-    } catch (err) {
-        log("Could not hook the stream connection:", err);
-        return;
-    }
+    // Changes made in Discord's stream menu while you're live arrive here
+    wrapMethod(connection, "setGoLiveSource", original => function (this: any, source: any, ...rest: any[]) {
+        return original.call(this, safely(() => overrideGoLiveQuality(source), source), ...rest);
+    });
 
     lastSent = "";
     discordMaxSeen = 0;
@@ -384,10 +428,10 @@ function hook(connection: any) {
 function unhookAll() {
     try {
         engine?.connections?.forEach?.((connection: any) => {
-            const native = connection?.conn;
-            const fn = native?.setTransportOptions;
-            if (fn?.[ORIGINAL]) native.setTransportOptions = fn[ORIGINAL];
+            unwrapMethod(connection?.conn, "setTransportOptions");
+            unwrapMethod(connection, "setGoLiveSource");
         });
+        unwrapMethod(engine, "setGoLiveSource");
     } catch (err) {
         log("Could not unhook:", err);
     }
@@ -402,6 +446,13 @@ function attachEngine() {
     }
     if (!engine) return false;
     engine.on?.("Connection", hook);
+
+    // The quality from Discord's stream menu when you go live (and when you change it)
+    wrapMethod(engine, "setGoLiveSource", original => function (this: any, source: any, ...rest: any[]) {
+        const next = rest[0] === "stream" ? safely(() => overrideGoLiveQuality(source), source) : source;
+        return original.call(this, next, ...rest);
+    });
+
     log("Media engine found");
     return true;
 }

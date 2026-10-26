@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0 (2026-10-26)
+
+- StreamQuality now also controls what Discord captures: changing the resolution or frame rate in Discord's stream menu no longer lowers your stream. The frame rate always follows StreamQuality, and so does the resolution unless it's set to Same as Discord
+
 ## 1.1.0 (2026-10-26)
 
 - New Video Codec setting (experimental): force H265 / HEVC, AV1 or H264 for your stream and camera, if your PC can encode it. Default: Automatic
