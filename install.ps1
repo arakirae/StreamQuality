@@ -6,23 +6,27 @@
 #   2. Finds your Vencord folder (Vencord in your user folder or in Documents) and updates it,
 #      or downloads Vencord into %USERPROFILE%\Vencord if you don't have it yet
 #   3. Copies StreamQuality into Vencord\src\userplugins\streamQuality and builds Vencord
+#      (from the files next to this installer, or downloaded from GitHub if they aren't there)
 #   4. Asks whether to install (inject) Vencord into Discord
 #
-# Start it with Install.bat, or run:
-#   powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1
+# Start it with Install.bat, or paste this in PowerShell:
+#   irm https://raw.githubusercontent.com/arakirae/StreamQuality/main/install.ps1 | iex
+
+# Everything runs inside this block, so pasting the command above leaves nothing behind in your PowerShell window
+$StreamQualityResult = & {
+param([string]$Root)
 
 $ErrorActionPreference = 'Stop'
 
 $VencordRepo = 'https://github.com/Vendicated/Vencord.git'
+$RawBase = 'https://raw.githubusercontent.com/arakirae/StreamQuality/main/'
+$PluginFiles = @('index.ts', 'native.ts')
 $MinNodeMajor = 18          # Vencord's build refuses older versions
 $RecommendedNodeMajor = 22  # what Vencord asks for in its package.json
 $MinPnpmMajor = 9
 
-$ScriptDir = $PSScriptRoot
-if (-not $ScriptDir) { $ScriptDir = (Get-Location).Path }
-$PluginFile = Join-Path $ScriptDir 'index.ts'
 $DefaultVencordDir = Join-Path $env:USERPROFILE 'Vencord'
-$script:VencordDir = $DefaultVencordDir
+$State = @{ VencordDir = $DefaultVencordDir; PluginSource = $null; TempDir = $null }
 
 function Write-Step([string]$Text) {
     Write-Host ''
@@ -72,11 +76,36 @@ function Invoke-Tool([string]$What, [string]$FilePath, [string[]]$Arguments, [st
 function Install-WithWinget([string]$Id, [string]$Name, [string]$Url) {
     $winget = Get-ToolPath 'winget'
     if (-not $winget) {
-        throw "$Name is missing and winget is not available to install it. Install $Name from $Url, then run Install.bat again."
+        throw "$Name is missing and winget is not available to install it. Install $Name from $Url, then run the installer again."
     }
     Write-Info "Installing $Name with winget. If Windows asks for permission, click Yes."
     Invoke-Tool "Installing $Name" $winget @('install', '--id', $Id, '--exact', '--source', 'winget', '--accept-package-agreements', '--accept-source-agreements') $env:USERPROFILE
     Update-SessionPath
+}
+
+# The plugin files: next to this installer (ZIP download), or fresh from GitHub (one-command install)
+function Get-PluginSource {
+    Write-Step 'Getting StreamQuality'
+    if ($Root -and (Test-Path -LiteralPath (Join-Path $Root 'index.ts'))) {
+        $State.PluginSource = $Root
+        Write-Ok "Using the files in $Root"
+        return
+    }
+    # GitHub only accepts TLS 1.2 or newer, which older Windows PowerShell doesn't always turn on by itself
+    [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+    $tmp = Join-Path ([IO.Path]::GetTempPath()) ('StreamQuality-' + [Guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Force -Path $tmp | Out-Null
+    $State.TempDir = $tmp
+    foreach ($file in $PluginFiles) {
+        Write-Info "Downloading $file from GitHub"
+        Invoke-WebRequest -Uri ($RawBase + $file) -OutFile (Join-Path $tmp $file) -UseBasicParsing
+    }
+    $index = [IO.File]::ReadAllText((Join-Path $tmp 'index.ts'))
+    if ($index -notmatch 'name: "StreamQuality"') {
+        throw 'The file downloaded from GitHub does not look like StreamQuality. Check your connection and run the installer again.'
+    }
+    $State.PluginSource = $tmp
+    Write-Ok 'Downloaded the latest version'
 }
 
 function Assert-Git {
@@ -84,7 +113,7 @@ function Assert-Git {
     if (-not (Get-ToolPath 'git')) {
         Install-WithWinget 'Git.Git' 'Git' 'https://git-scm.com/download/win'
         if (-not (Get-ToolPath 'git')) {
-            throw 'Git was installed, but this window cannot see it yet. Close this window and run Install.bat again.'
+            throw 'Git was installed, but this window cannot see it yet. Close this window and run the installer again.'
         }
     }
     $version = (& (Get-ToolPath 'git') --version | Out-String).Trim()
@@ -96,17 +125,17 @@ function Assert-Node {
     if (-not (Get-ToolPath 'node')) {
         Install-WithWinget 'OpenJS.NodeJS.LTS' 'Node.js' 'https://nodejs.org'
         if (-not (Get-ToolPath 'node')) {
-            throw 'Node.js was installed, but this window cannot see it yet. Close this window and run Install.bat again.'
+            throw 'Node.js was installed, but this window cannot see it yet. Close this window and run the installer again.'
         }
     }
     $version = (& (Get-ToolPath 'node') --version | Out-String).Trim()
     $major = Get-MajorVersion $version
     if ($major -lt $MinNodeMajor) {
-        throw "Vencord needs Node.js $RecommendedNodeMajor or newer, but you have $version. Install the LTS version from https://nodejs.org, then run Install.bat again."
+        throw "Vencord needs Node.js $RecommendedNodeMajor or newer, but you have $version. Install the LTS version from https://nodejs.org, then run the installer again."
     }
     Write-Ok "Node.js $version"
     if ($major -lt $RecommendedNodeMajor) {
-        Write-Info "Vencord recommends Node.js $RecommendedNodeMajor or newer. If something fails below, install the LTS version from https://nodejs.org and run Install.bat again."
+        Write-Info "Vencord recommends Node.js $RecommendedNodeMajor or newer. If something fails below, install the LTS version from https://nodejs.org and run the installer again."
     }
 }
 
@@ -123,12 +152,12 @@ function Assert-Pnpm {
         if ($version) { Write-Info "pnpm $version is too old, updating it..." }
         else { Write-Info 'Installing pnpm...' }
         $npm = Get-ToolPath 'npm'
-        if (-not $npm) { throw 'npm was not found. Reinstall Node.js from https://nodejs.org, then run Install.bat again.' }
+        if (-not $npm) { throw 'npm was not found. Reinstall Node.js from https://nodejs.org, then run the installer again.' }
         Invoke-Tool 'Installing pnpm' $npm @('install', '--global', 'pnpm@latest') $env:USERPROFILE
         Update-SessionPath
         $version = Get-PnpmVersion
         if (-not $version) {
-            throw 'pnpm was installed, but this window cannot see it yet. Close this window and run Install.bat again.'
+            throw 'pnpm was installed, but this window cannot see it yet. Close this window and run the installer again.'
         }
         if ((Get-MajorVersion $version) -lt $MinPnpmMajor) {
             throw "pnpm $version is too old. Update it with: npm install --global pnpm@latest"
@@ -155,30 +184,31 @@ function Sync-Vencord {
     $git = Get-ToolPath 'git'
     $existing = Find-Vencord
     if ($existing) {
-        $script:VencordDir = $existing
+        $State.VencordDir = $existing
         Write-Info "Updating your Vencord in $existing"
         Invoke-Tool 'Updating Vencord' $git @('pull', '--ff-only') $existing
     }
     elseif (Test-Path -LiteralPath $DefaultVencordDir) {
-        throw "The folder $DefaultVencordDir already exists but is not a Vencord download. Rename or move it, then run Install.bat again."
+        throw "The folder $DefaultVencordDir already exists but is not a Vencord download. Rename or move it, then run the installer again."
     }
     else {
         Write-Info "Downloading Vencord into $DefaultVencordDir"
         Invoke-Tool 'Downloading Vencord' $git @('clone', $VencordRepo, 'Vencord') $env:USERPROFILE
-        $script:VencordDir = $DefaultVencordDir
+        $State.VencordDir = $DefaultVencordDir
     }
-    Write-Ok "Vencord is ready in $($script:VencordDir)"
+    Write-Ok "Vencord is ready in $($State.VencordDir)"
 }
 
 function Copy-Plugin {
     Write-Step 'Adding StreamQuality'
-    $pluginDir = [IO.Path]::Combine($script:VencordDir, 'src', 'userplugins', 'streamQuality')
+    $pluginDir = [IO.Path]::Combine($State.VencordDir, 'src', 'userplugins', 'streamQuality')
     New-Item -ItemType Directory -Force -Path $pluginDir | Out-Null
-    Copy-Item -LiteralPath $PluginFile -Destination (Join-Path $pluginDir 'index.ts') -Force
-    # native.ts is the part that checks GitHub for updates and installs them
-    $nativeFile = Join-Path $ScriptDir 'native.ts'
-    if (Test-Path -LiteralPath $nativeFile) {
-        Copy-Item -LiteralPath $nativeFile -Destination (Join-Path $pluginDir 'native.ts') -Force
+    foreach ($file in $PluginFiles) {
+        # native.ts is the part that checks GitHub for updates and installs them
+        $source = Join-Path $State.PluginSource $file
+        if (Test-Path -LiteralPath $source) {
+            Copy-Item -LiteralPath $source -Destination (Join-Path $pluginDir $file) -Force
+        }
     }
     Write-Ok "Copied to $pluginDir"
 }
@@ -186,9 +216,9 @@ function Copy-Plugin {
 function Build-Vencord {
     $pnpm = Get-ToolPath 'pnpm'
     Write-Step 'Installing what Vencord needs (this can take a few minutes)'
-    Invoke-Tool 'Installing Vencord dependencies' $pnpm @('install', '--frozen-lockfile') $script:VencordDir
+    Invoke-Tool 'Installing Vencord dependencies' $pnpm @('install', '--frozen-lockfile') $State.VencordDir
     Write-Step 'Building Vencord'
-    Invoke-Tool 'Building Vencord' $pnpm @('build') $script:VencordDir
+    Invoke-Tool 'Building Vencord' $pnpm @('build') $State.VencordDir
     Write-Ok 'Build finished'
 }
 
@@ -202,7 +232,7 @@ function Install-IntoDiscord {
         return
     }
     Write-Info 'Pick your Discord with the arrow keys and press Enter.'
-    Invoke-Tool 'Installing Vencord into Discord' (Get-ToolPath 'pnpm') @('inject') $script:VencordDir
+    Invoke-Tool 'Installing Vencord into Discord' (Get-ToolPath 'pnpm') @('inject') $State.VencordDir
 }
 
 $exitCode = 0
@@ -211,10 +241,7 @@ try {
     Write-Host 'StreamQuality installer' -ForegroundColor Magenta
     Write-Host 'Installs Vencord from source together with the StreamQuality plugin.'
 
-    if (-not (Test-Path -LiteralPath $PluginFile)) {
-        throw 'index.ts was not found next to this installer. Extract the whole ZIP first (right click > Extract All), then run Install.bat from the extracted folder.'
-    }
-
+    Get-PluginSource
     Assert-Git
     Assert-Node
     Assert-Pnpm
@@ -234,6 +261,16 @@ catch {
     $exitCode = 1
     Write-Host ''
     Write-Host "Something went wrong: $($_.Exception.Message)" -ForegroundColor Red
-    Write-Host 'Fix the problem above, then run Install.bat again.'
+    Write-Host 'Fix the problem above, then run the installer again.'
 }
-exit $exitCode
+finally {
+    if ($State.TempDir) { Remove-Item -LiteralPath $State.TempDir -Recurse -Force -ErrorAction SilentlyContinue }
+}
+$exitCode
+} $PSScriptRoot
+
+# Install.bat runs this file directly and reads the exit code. A pasted command must not close the window.
+$StreamQualityExitCode = @($StreamQualityResult)[-1]
+Remove-Variable StreamQualityResult -ErrorAction SilentlyContinue
+if ($PSCommandPath) { exit $StreamQualityExitCode }
+Remove-Variable StreamQualityExitCode -ErrorAction SilentlyContinue

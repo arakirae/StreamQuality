@@ -12,6 +12,16 @@ It forces the bitrate and frame rate of your Go Live stream, stops Discord and y
 
 <img src="docs/notification-blocked.png" alt="StreamQuality notification: Blocked a quality drop: a viewer asked for fewer pixels (921600)" width="400">
 
+## Quick install
+
+On Windows, open **PowerShell**, paste this and press Enter:
+
+```powershell
+irm https://raw.githubusercontent.com/arakirae/StreamQuality/main/install.ps1 | iex
+```
+
+Follow the window, then fully close Discord, open it again and turn on **StreamQuality** in **User Settings → Vencord → Plugins**. Step by step guide and other ways to install: [Installation](#installation).
+
 ## Features
 
 - **Forced bitrate.** Sets the target, minimum and maximum bitrate of your stream (by default 9000, 4000 and 9000 kbps).
@@ -41,7 +51,22 @@ Vencord's team doesn't support custom plugins, so please ask for help with Strea
 
 ## Installation
 
-### Automatic (recommended)
+### One command (fastest)
+
+1. Open **PowerShell**: press Start, type `powershell` and press Enter.
+2. Paste this and press Enter:
+
+   ```powershell
+   irm https://raw.githubusercontent.com/arakirae/StreamQuality/main/install.ps1 | iex
+   ```
+
+3. Follow the window. It installs what's missing, downloads StreamQuality and builds Vencord (this can take a few minutes). When it asks whether to install Vencord into Discord, answer **Y** the first time, then pick your Discord with the arrow keys and press Enter.
+4. Fully close Discord: right click its icon next to the clock → **Quit Discord**. Then open it again.
+5. Go to **User Settings → Vencord → Plugins**, search for **StreamQuality** and turn it on.
+
+The command downloads [install.ps1](install.ps1) from this repository and runs it. It's the same installer that Install.bat starts, and you can read it before running it.
+
+### Automatic, with the ZIP
 
 1. Download **[StreamQuality.zip](https://github.com/arakirae/StreamQuality/releases/latest/download/StreamQuality.zip)** from the latest release. It holds only what you need to install.
 2. Right click the ZIP → **Extract All**.
@@ -102,7 +127,7 @@ StreamQuality's settings win over Discord's stream menu: the frame rate always, 
 
 When a new version is out, a notification appears a few seconds after Discord starts: click it, wait for the second notification, then click that one to restart Discord. Your settings are kept.
 
-You can also download [StreamQuality.zip](https://github.com/arakirae/StreamQuality/releases/latest/download/StreamQuality.zip) again and run **Install.bat**. Versions before 1.3.0 can't update themselves, so update them this way once.
+You can also paste the install command again, or download [StreamQuality.zip](https://github.com/arakirae/StreamQuality/releases/latest/download/StreamQuality.zip) again and run **Install.bat**. Versions before 1.3.0 can't update themselves, so update them this way once.
 
 ## Uninstalling
 
@@ -126,8 +151,8 @@ In calm scenes the encoder simply needs less data. The minimum stops Discord fro
 **My stream freezes or stutters.**
 Your upload is probably too slow for the bitrate. Lower Bitrate Target, Min and Max (see [Before you start](#before-you-start)).
 
-**Install.bat says something went wrong.**
-The red message says what failed. Most often Git or Node.js was just installed and Windows hasn't picked it up yet: close the window and run Install.bat again. If it still fails, [open an issue](../../issues) with a screenshot.
+**The installer says something went wrong.**
+The red message says what failed. Most often Git or Node.js was just installed and Windows hasn't picked it up yet: close the window, open a new PowerShell window and paste the command again (or run Install.bat again). If it still fails, [open an issue](../../issues) with a screenshot.
 
 ## Credits
 
